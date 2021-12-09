@@ -35,7 +35,7 @@ class Ground(pygame.sprite.Sprite):
         self.image = pygame.Surface((WIDTH, 100))
         rect = pygame.Rect(20, 20, 20, 20)
         pygame.draw.rect(self.image, color, rect, 1)
-        self.image.fill((color))
+        self.image.fill(color)
         self.rect = self.image.get_rect()
         self.rect.center = (WIDTH / 2, 480)
 
@@ -51,18 +51,46 @@ class MainChar(pygame.sprite.Sprite):
         self.isJump = False
         self.jumpCount = 7
 
+    # def update(self):
+    #     if self.isJump:
+    #         if self.jumpCount >= -7:
+    #             if self.jumpCount > 0:
+    #                 self.rect.y -= self.jumpCount ** 2
+    #                 self.jumpCount -= 1
+    #             else:
+    #                 self.rect.y += self.jumpCount ** 2
+    #                 self.jumpCount -= 1
+    #         else:
+    #             self.isJump = False
+    #             self.jumpCount = 7
+
     def update(self):
         if self.isJump:
             if self.jumpCount >= -7:
                 if self.jumpCount > 0:
+                    # Вот сюда пихнуть пнг прыжка
+                    self.image = pygame.image.load("1222.png")
+                    self.image.set_colorkey((255, 255, 255))
+                    self.image = pygame.transform.scale(self.image, (100, 100))
+                    # ///////////////////////////////
                     self.rect.y -= self.jumpCount ** 2
                     self.jumpCount -= 1
                 else:
+                    # Вот сюда пихнуть пнг прыжка
+                    self.image = pygame.image.load("1222.png")
+                    self.image.set_colorkey((255, 255, 255))
+                    self.image = pygame.transform.scale(self.image, (100, 100))
+                    # ///////////////////////////////
                     self.rect.y += self.jumpCount ** 2
                     self.jumpCount -= 1
             else:
                 self.isJump = False
                 self.jumpCount = 7
+                self.image = pygame.image.load('122.png')
+                self.image.set_colorkey((255, 255, 255))
+                self.image = pygame.transform.scale(self.image, (100, 130))
+                self.rect = self.image.get_rect()
+                self.rect.center = (75, 369)
 
     def slide(self):
         self.image = pygame.image.load("1222.png")
@@ -70,9 +98,6 @@ class MainChar(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (100, 100))
         self.rect = self.image.get_rect()
         self.rect.center = (75, 380)
-
-
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
 
 def main():
@@ -89,11 +114,13 @@ def main():
 
     char = MainChar()
 
-    groundSprite = Ground()
+    ground = Ground()
 
-    all_sprites.add(char, groundSprite, obs_1)
+    all_sprites.add(char, ground, obs_1)
 
     score = 0
+
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
     running = True
     while running:
@@ -119,7 +146,7 @@ def main():
             obs_1.speed *= score / 100 + 1
         font = pygame.font.Font(None, 30)
         screen.fill((255, 255, 255))
-        score_text = font.render(scoreText, 1, (0, 0, 0))
+        score_text = font.render(scoreText, True, (0, 0, 0))
         screen.blit(score_text, (10, 10))
         all_sprites.draw(screen)
         all_sprites.update()
@@ -162,7 +189,7 @@ def gameOver(score):
         ix = 100
         for i in range(len(introString)):
             font = pygame.font.Font(None, 30)
-            introText = font.render(introString[i], 1, (0, 0, 0))
+            introText = font.render(introString[i], True, (0, 0, 0))
             screen.blit(introText, (WIDTH / 2 - 175, HEIGHT / 3 + ix))
             i += 1
             ix -= 25
@@ -177,6 +204,7 @@ def gameOver(score):
 
 
 def intro():
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.init()
     background = pygame.Surface(screen.get_size())
     background = background.convert()
@@ -215,7 +243,7 @@ def intro():
         ix = 100
         for i in range(len(introString)):
             font = pygame.font.Font(None, 30)
-            introText = font.render(introString[i], 1, (0, 0, 0))
+            introText = font.render(introString[i], True, (0, 0, 0))
             screen.blit(introText, ((WIDTH / 2) - 130, HEIGHT / 2 - ix))
             i += 1
             ix -= 25
