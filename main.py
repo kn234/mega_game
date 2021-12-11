@@ -14,6 +14,8 @@ HEIGHT = 480
 FPS = 60
 score = 0
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
+speed = 15
+ground_speed = 10
 
 
 class Obstacle(pygame.sprite.Sprite):
@@ -29,17 +31,18 @@ class Obstacle(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = (random.randint(1000, 1400), 375)
         self.maxPosX = self.rect.center[1] * 2
-        self.speed = 15
 
     cordX = 1000
     cordY = 375
 
     def update(self):
-        global score
-        self.cordX -= self.speed
+        global score, speed, ground_speed
+        self.cordX -= speed
         if self.cordX < -40:
             score += 1
-            self.speed *= score / 1000 + 1
+            speed *= score / 1000 + 1
+            ground_speed *= score / 1000 + 1
+
             obPlace = random.randint(0, 1)
             if obPlace == 0:
                 self.cordY = 375
@@ -61,39 +64,38 @@ class Ground(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load('floor.png')
-        self.image = pygame.transform.scale(self.image, (920, 115))
+        self.image = pygame.transform.scale(self.image, (1200, 150))
         self.image.set_colorkey((255, 255, 255))
         self.rect = self.image.get_rect()
-        self.rect.center = (WIDTH, 479)
-        self.speed = 15
+        self.rect.center = (WIDTH + 75, 493)
 
     def update(self):
-        global status
+        global status, ground_speed
         if status == 'Intro':
-            self.rect.center = (WIDTH / 2, 479)
+            self.rect.center = (WIDTH / 2, 493)
         else:
-            self.rect.x -= 10
-            if self.rect.right == 0:
-                self.rect.left = WIDTH
+            self.rect.x -= ground_speed
+            if self.rect.right < 0:
+                self.rect.left = WIDTH + 30
+
 
 class Ground_2(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load('floor.png')
-        self.image = pygame.transform.scale(self.image, (920, 115))
+        self.image = pygame.transform.scale(self.image, (1200, 150))
         self.image.set_colorkey((255, 255, 255))
         self.rect = self.image.get_rect()
-        self.rect.center = (0, 479)
-        self.speed = 15
+        self.rect.center = (0, 493)
 
     def update(self):
-        global status
+        global status, ground_speed
         if status == 'Intro':
             self.rect.center = (WIDTH, -400)
         else:
-            self.rect.x -= 10
-            if self.rect.right == 0:
-                self.rect.left = WIDTH
+            self.rect.x -= ground_speed
+            if self.rect.right < 0:
+                self.rect.left = WIDTH + 30
 
 
 class MainChar(pygame.sprite.Sprite):
@@ -111,7 +113,7 @@ class MainChar(pygame.sprite.Sprite):
         self.cordX, self.cordY = 75, 360
         self.rect.center = (self.cordX, self.cordY)
         self.isJump = False
-        self.jumpCount = 10
+        self.jumpCount = 9
         self.isSlide = False
 
     def update(self):
@@ -140,7 +142,7 @@ class MainChar(pygame.sprite.Sprite):
             self.rect = self.image.get_rect()
             self.rect.center = (self.cordX_2, self.cordY_2)
             if self.isJump:
-                if self.jumpCount >= -10:
+                if self.jumpCount >= -9:
                     if self.jumpCount > 0:
                         # Вот сюда пихнуть пнг прыжка
                         self.image = pygame.image.load("sprites/6.jpg")
@@ -148,7 +150,7 @@ class MainChar(pygame.sprite.Sprite):
                         self.image = pygame.transform.scale(self.image,
                                                             (self.image.get_size()[0] * 0.6, 140))
                         self.rect = self.image.get_rect()
-                        self.cordY_2 -= self.jumpCount * self.jumpCount * 0.5
+                        self.cordY_2 -= self.jumpCount * self.jumpCount * 0.6
                         self.rect.center = (self.cordX_2, self.cordY_2)
                         self.jumpCount -= 1
                     else:
@@ -158,12 +160,12 @@ class MainChar(pygame.sprite.Sprite):
                         self.image = pygame.transform.scale(self.image,
                                                             (self.image.get_size()[0] * 0.6, 140))
                         self.rect = self.image.get_rect()
-                        self.cordY_2 += self.jumpCount * self.jumpCount * 0.5
+                        self.cordY_2 += self.jumpCount * self.jumpCount * 0.6
                         self.rect.center = (self.cordX_2, self.cordY_2)
                         self.jumpCount -= 1
                 else:
                     self.isJump = False
-                    self.jumpCount = 10
+                    self.jumpCount = 9
             if self.isSlide:
                 self.image = pygame.transform.scale(self.image,
                                                     (self.image.get_size()[0] * 0.8, 110))
@@ -269,7 +271,9 @@ def main():
 
 
 def game_over(g_score, record):
-    global screen
+    global screen, speed, ground_speed
+    speed = 15
+    ground_speed = 10
     background = pygame.Surface(screen.get_size())
     background = background.convert()
     background.fill((255, 255, 255))
