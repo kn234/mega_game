@@ -49,7 +49,6 @@ class MainChar(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.images = [pygame.image.load(f"sprites/{i}.jpg") for i in range(1, 11) for x in range(3)]
-        self.sl_images = [pygame.image.load(f"sprites1/slide{i}.jpg") for i in range(1, 3) for x in range(15)]
         for im in self.images:
             im.set_colorkey((255, 255, 255))
         self.index = 0
@@ -73,7 +72,7 @@ class MainChar(pygame.sprite.Sprite):
             if self.index >= 30:
                 self.index = 0
             elif self.rect.x < WIDTH + 100:
-                self.cordX += 13
+                self.cordX += 11
             else:
                 self.cordX = -100
         else:
@@ -108,13 +107,40 @@ class MainChar(pygame.sprite.Sprite):
                     self.isJump = False
                     self.jumpCount = 9
             if self.isSlide:
-                self.index += 1
-                if self.index >= 30:
-                    self.index = 0
-                self.image = self.sl_images[self.index_1]
-                self.image = pygame.transform.scale(self.image, (self.image.get_size()[0] * 0.63, 100 * 0.88))
-                self.rect = self.image.get_rect()
-                self.rect.center = (self.cordX_2, self.cordY_2 + 33)
+                self.image = pygame.transform.scale(self.image,
+                                                    (self.image.get_size()[0] * 0.8, 110))
+                # self.index += 1
+                # if self.index >= 30:
+                #     self.index = 0
+                # self.image = self.images[self.index]
+                # self.image = pygame.transform.scale(self.image,
+                #                                     (self.image.get_size()[0] * 0.4, 100))
+                # self.rect = self.image.get_rect()
+                self.rect.center = (self.cordX_2 + 10, self.cordY_2 + 30)
+
+
+class Smoke_sprite(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.images = [pygame.image.load(f'smoke_sprite/{i}.png')for i in range(1, 11)
+                       for x in range(3)]
+        for n in self.images:
+            n.set_colorkey((4, 142, 176))
+        self.index = 0
+        self.image = self.images[self.index]
+        self.rect = self.image.get_rect()
+        self.smoke_bool = False
+
+    def update(self):
+        if self.smoke_bool:
+            self.index += 1
+            if self.index >= 30:
+                self.index = 0
+                self.smoke_bool = False
+            self.image = self.images[self.index]
+            self.image = pygame.transform.scale(self.image, (150, 150))
+            self.rect = self.image.get_rect()
+            self.rect.center = (150, 375)
 
 
 def main():
@@ -128,23 +154,30 @@ def main():
     obs_1 = Obstacle()
     char = MainChar()
     ground = Ground()
-    all_sprites.add(char, ground, obs_1)
+    smoke = Smoke_sprite()
+    all_sprites.add(char, ground, obs_1, smoke)
     score = 0
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     running = True
+    ix = 0
     while running:
         clock.tick(FPS)
-        scoreText = "Score: " + str(score)
+        score_text = "Score: " + str(score)
+        screen.fill((255, 255, 255))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 quit_game()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
                     char.isJump = True
+                elif event.key == pygame.K_DOWN:
+                    smoke.smoke_bool = True
+                    all_sprites.add(smoke)
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_DOWN:
                     char.isSlide = False
-
+                    smoke.smoke_bool = True
+                    all_sprites.add(smoke)
         keys = pygame.key.get_pressed()
         if keys[pygame.K_DOWN]:
             char.isSlide = True
@@ -156,9 +189,10 @@ def main():
             score += 1
             obs_1.speed *= score / 1000 + 1
         font = pygame.font.Font(None, 30)
-        screen.fill((255, 255, 255))
-        score_text = font.render(scoreText, True, (0, 0, 0))
+        score_text = font.render(score_text, True, (0, 0, 0))
         screen.blit(score_text, (10, 10))
+        if not smoke.smoke_bool:
+            all_sprites.remove(smoke)
         all_sprites.draw(screen)
         all_sprites.update()
         pygame.display.flip()
@@ -194,8 +228,8 @@ def game_over(score):
         ix = 100
         for i in range(len(intro_string)):
             font = pygame.font.Font(None, 30)
-            introText = font.render(intro_string[i], True, (0, 0, 0))
-            screen.blit(introText, (WIDTH / 2 - 175, HEIGHT / 3 + ix))
+            intro_text = font.render(intro_string[i], True, (0, 0, 0))
+            screen.blit(intro_text, (WIDTH / 2 - 175, HEIGHT / 3 + ix))
             i += 1
             ix -= 25
 
