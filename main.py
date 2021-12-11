@@ -20,7 +20,7 @@ class Obstacle(pygame.sprite.Sprite):
 
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.images = [pygame.image.load(f"fire_ball_sprite/{i}.jpg") for i in range(1, 6)
+        self.images = [pygame.image.load(f"fireball_sprite/{i}.jpg") for i in range(1, 6)
                        for x in range(12)]
         for im in self.images:
             im.set_colorkey((38, 36, 37))
