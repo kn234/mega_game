@@ -42,7 +42,7 @@ class Obstacle(pygame.sprite.Sprite):
         if self.cordX < -40:
             score += 1
             speed *= score / 1000 + 1
-            ground_speed *= score / 1000 + 1
+            # ground_speed *= score / 1000 + 1
 
             obPlace = random.randint(0, 1)
             if obPlace == 0:
@@ -64,39 +64,46 @@ class Obstacle(pygame.sprite.Sprite):
 class Ground(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load('floor.png')
-        self.image = pygame.transform.scale(self.image, (1200, 150))
+        self.image = pygame.image.load('ground.png')
         self.image.set_colorkey((255, 255, 255))
         self.rect = self.image.get_rect()
-        self.rect.center = (WIDTH + 75, 493)
+        self.rect.left = 0
+        self.rect.y = 395
 
     def update(self):
         global status, ground_speed
         if status == 'Intro':
-            self.rect.center = (WIDTH / 2, 493)
+            pass
         else:
             self.rect.x -= ground_speed
             if self.rect.right < 0:
-                self.rect.left = WIDTH + 30
+               self.rect.left = self.image.get_size()[0] + self.image.get_size()[0] - (0 -  self.rect.right)
+
+# class Ground_2(pygame.sprite.Sprite):
+#     def __init__(self):
+#         pygame.sprite.Sprite.__init__(self)
+#         self.image = pygame.image.load('floor.png')
+#         self.image = pygame.transform.scale(self.image, (1200, 150))
+#         self.image.set_colorkey((255, 255, 255))
+#         self.rect = self.image.get_rect()
+#         self.rect.center = (0, 493)
+
+    # def update(self):
+    #     global status, ground_speed
+    #     if status == 'Intro':
+    #         self.rect.center = (WIDTH, -400)
+    #     else:
+    #         self.rect.x -= ground_speed
+    #         if self.rect.right < 0:
+    #             self.rect.left = WIDTH + 30
 
 
-class Ground_2(pygame.sprite.Sprite):
+class BackG(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load('floor.png')
-        self.image = pygame.transform.scale(self.image, (1200, 150))
-        self.image.set_colorkey((255, 255, 255))
+        self.image = pygame.image.load('bg.png')
         self.rect = self.image.get_rect()
-        self.rect.center = (0, 493)
-
-    def update(self):
-        global status, ground_speed
-        if status == 'Intro':
-            self.rect.center = (WIDTH, -400)
-        else:
-            self.rect.x -= ground_speed
-            if self.rect.right < 0:
-                self.rect.left = WIDTH + 30
+        self.rect.center = (50, 200)
 
 
 class MainChar(pygame.sprite.Sprite):
@@ -104,9 +111,7 @@ class MainChar(pygame.sprite.Sprite):
 
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.images = [pygame.image.load(f"sprites/{i}.jpg") for i in range(1, 11) for x in range(3)]
-        for im in self.images:
-            im.set_colorkey((255, 255, 255))
+        self.images = [pygame.image.load(f"sprites/{i}.png") for i in range(1, 11) for x in range(3)]
         self.index = 0
         self.index_1 = 0
         self.image = self.images[self.index]
@@ -122,7 +127,8 @@ class MainChar(pygame.sprite.Sprite):
         if status == 'Intro':
             self.image = self.images[self.index]
             self.image.set_colorkey((255, 255, 255))
-            self.image = pygame.transform.scale(self.image, (self.image.get_size()[0] * 0.6, 140))
+            self.image = pygame.transform.scale(self.image,
+                                                (self.image.get_size()[0] * 0.6, 140))
             self.rect = self.image.get_rect()
             self.rect.x, self.rect.y = self.cordX, 290
             self.index += 1
@@ -145,9 +151,7 @@ class MainChar(pygame.sprite.Sprite):
             if self.isJump:
                 if self.jumpCount >= -9:
                     if self.jumpCount > 0:
-                        # Вот сюда пихнуть пнг прыжка
-                        self.image = pygame.image.load("sprites/6.jpg")
-                        self.image.set_colorkey((255, 255, 255))
+                        self.image = pygame.image.load("sprites/6.png")
                         self.image = pygame.transform.scale(self.image,
                                                             (self.image.get_size()[0] * 0.6, 140))
                         self.rect = self.image.get_rect()
@@ -155,9 +159,7 @@ class MainChar(pygame.sprite.Sprite):
                         self.rect.center = (self.cordX_2, self.cordY_2)
                         self.jumpCount -= 1
                     else:
-                        # Вот сюда пихнуть пнг прыжка
-                        self.image = pygame.image.load("sprites/6.jpg")
-                        self.image.set_colorkey((255, 255, 255))
+                        self.image = pygame.image.load("sprites/6.png")
                         self.image = pygame.transform.scale(self.image,
                                                             (self.image.get_size()[0] * 0.6, 140))
                         self.rect = self.image.get_rect()
@@ -217,9 +219,13 @@ def main():
     obs_1 = Obstacle()
     char = MainChar()
     ground = Ground()
-    ground_2 = Ground_2()
+    ground_2 = Ground()
+    ground_3 = Ground()
+    ground_2.rect.left = (ground_2.image.get_size()[0])
+    ground_3.rect.left = ground_2.image.get_size()[0] + ground_2.image.get_size()[0]
     smoke = SmokeSprite()
-    all_sprites.add(char, ground, ground_2, obs_1, smoke)
+    bg = BackG()
+    all_sprites.add(bg, ground, ground_2, ground_3, char, obs_1, smoke)
     running = True
     score = 0
 
@@ -255,11 +261,11 @@ def main():
         screen.blit(score_text, (10, 10))
         font_2 = pygame.font.Font(None, 30)
         record_text = font_2.render(record_text, True, (0, 0, 0))
-        screen.blit(score_text, (10, 10))
-        screen.blit(record_text, (10, 30))
         if not smoke.smoke_bool:
             all_sprites.remove(smoke)
         all_sprites.draw(screen)
+        screen.blit(score_text, (10, 10))
+        screen.blit(record_text, (10, 30))
         all_sprites.update()
         pygame.display.flip()
 
@@ -336,9 +342,10 @@ def intro():
 
     char = MainChar()
     ground = Ground()
-    ground_2 = Ground_2()
-
-    all_sprites = pygame.sprite.Group(char, ground, ground_2)
+    ground_2 = Ground()
+    bg = BackG()
+    ground_2.rect.left = (ground_2.image.get_size()[0])
+    all_sprites = pygame.sprite.Group(bg, ground, ground_2, char)
 
     pygame.mouse.set_visible(True)
 
@@ -369,6 +376,14 @@ def intro():
             ix -= 40
         all_sprites.clear(screen, background)
         all_sprites.draw(screen)
+        i = 0
+        ix = 160
+        for i in range(len(intro_string)):
+            font = pygame.font.Font(None, 40)
+            introText = font.render(intro_string[i], True, (0, 0, 0))
+            screen.blit(introText, ((WIDTH / 2) - 270, HEIGHT / 2 - ix))
+            i += 1
+            ix -= 40
         all_sprites.update()
         pygame.display.flip()
 
