@@ -1,7 +1,7 @@
 import pygame
 import random
 import sys
-global screen, status
+global status
 
 
 score_list = list()
@@ -16,14 +16,15 @@ score = 0
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 speed = 15
 ground_speed = 10
+cX = 150
+cY = 375
 
 
 class Obstacle(pygame.sprite.Sprite):
-
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.images = [pygame.image.load(f"fireball_sprite/{i}.jpg") for i in range(1, 6)
-                       for x in range(12)]
+                       for x in range(6)]
         for im in self.images:
             im.set_colorkey((38, 36, 37))
         self.index = 0
@@ -48,11 +49,11 @@ class Obstacle(pygame.sprite.Sprite):
                 self.cordY = 375
                 self.cordX = random.randint(1000, 1400)
             else:
-                self.cordY = 300
+                self.cordY = 290
                 self.cordX = random.randint(1000, 1400)
         else:
             self.index += 1
-            if self.index >= 60:
+            if self.index >= 30:
                 self.index = 0
             self.image = self.images[self.index]
             self.image = pygame.transform.scale(self.image, (self.image.get_size()[0] * 0.2, 40))
@@ -182,7 +183,7 @@ class MainChar(pygame.sprite.Sprite):
 class SmokeSprite(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.images = [pygame.image.load(f'smoke_sprite/{i}.png')for i in range(1, 11)
+        self.images = [pygame.image.load(f'smoke_sprite/{i}.png') for i in range(1, 11)
                        for x in range(3)]
         for n in self.images:
             n.set_colorkey((4, 142, 176))
@@ -193,6 +194,7 @@ class SmokeSprite(pygame.sprite.Sprite):
         self.smoke_bool = False
 
     def update(self):
+        global cX, cY
         if self.smoke_bool:
             self.index += 1
             if self.index >= 30:
@@ -201,12 +203,12 @@ class SmokeSprite(pygame.sprite.Sprite):
             self.image = self.images[self.index]
             self.image = pygame.transform.scale(self.image, (200, 150))
             self.rect = self.image.get_rect()
-            self.rect.center = (150, 375)
+            self.rect.center = (cX, cY)
 
 
 def main():
     pygame.init()
-    global screen, status, score, score_list
+    global screen, status, score, score_list, cY, cX
     status = 'Main'
     pygame.mixer.init()
     pygame.display.set_caption("My Game")
@@ -220,8 +222,11 @@ def main():
     all_sprites.add(char, ground, ground_2, obs_1, smoke)
     running = True
     score = 0
+
     while running:
         clock.tick(FPS)
+        cX = char.rect.center[0]
+        cY = char.rect.center[1]
         score_text = "Score: " + str(score)
         record_text = "Record: " + str(score_list[0])
         screen.fill((255, 255, 255))
@@ -257,6 +262,7 @@ def main():
         all_sprites.draw(screen)
         all_sprites.update()
         pygame.display.flip()
+
     score_list.append(score)
     if int(score_list[0]) <= int(score_list[1]):
         score_list[0] = score_list[1]
@@ -308,11 +314,10 @@ def game_over(g_score, record):
         f_1 = pygame.font.Font(None, 70)
         game_over_text = 'GAME OVER'
         game_over_text = f_1.render(game_over_text, True, (0, 0, 0))
-        screen.blit(game_over_text, (WIDTH/ 2 - 175, 100))
+        screen.blit(game_over_text, (WIDTH / 2 - 175, 100))
         # all_sprites.clear(screen, background)
         # all_sprites.update()
         # all_sprites.draw(screen)
-
         pygame.display.flip()
 
     main()
@@ -333,7 +338,6 @@ def intro():
     ground = Ground()
     ground_2 = Ground_2()
 
-
     all_sprites = pygame.sprite.Group(char, ground, ground_2)
 
     pygame.mouse.set_visible(True)
@@ -350,7 +354,7 @@ def intro():
                 if event.key == pygame.K_SPACE:
                     keepGoing = False
 
-        intro_string = []
+        intro_string = list()
         intro_string.append("Не соприкасайся с препятствиями")
         intro_string.append("'key_up'(стрелка вверх), чтобы прыгать")
         intro_string.append("'key_down'(стрелка вниз), чтобы присесть")
