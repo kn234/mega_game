@@ -18,6 +18,7 @@ speed = 15
 ground_speed = 10
 cX = 150
 cY = 375
+my_bool = 1
 
 
 class Obstacle(pygame.sprite.Sprite):
@@ -41,7 +42,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.cordX -= speed
         if self.cordX < -40:
             score += 1
-            speed *= score / 1000 + 1
+            speed += 1 / 20 #Возможно стоит переделать 
             # ground_speed *= score / 1000 + 1
 
             obPlace = random.randint(0, 1)
@@ -77,25 +78,8 @@ class Ground(pygame.sprite.Sprite):
         else:
             self.rect.x -= ground_speed
             if self.rect.right < 0:
-               self.rect.left = self.image.get_size()[0] + self.image.get_size()[0] - (0 -  self.rect.right)
-
-# class Ground_2(pygame.sprite.Sprite):
-#     def __init__(self):
-#         pygame.sprite.Sprite.__init__(self)
-#         self.image = pygame.image.load('floor.png')
-#         self.image = pygame.transform.scale(self.image, (1200, 150))
-#         self.image.set_colorkey((255, 255, 255))
-#         self.rect = self.image.get_rect()
-#         self.rect.center = (0, 493)
-
-    # def update(self):
-    #     global status, ground_speed
-    #     if status == 'Intro':
-    #         self.rect.center = (WIDTH, -400)
-    #     else:
-    #         self.rect.x -= ground_speed
-    #         if self.rect.right < 0:
-    #             self.rect.left = WIDTH + 30
+                self.rect.left = self.image.get_size()[0] + self.image.get_size()[0] - \
+                    (0 - self.rect.right)
 
 
 class BackG(pygame.sprite.Sprite):
@@ -126,7 +110,6 @@ class MainChar(pygame.sprite.Sprite):
         global status
         if status == 'Intro':
             self.image = self.images[self.index]
-            self.image.set_colorkey((255, 255, 255))
             self.image = pygame.transform.scale(self.image,
                                                 (self.image.get_size()[0] * 0.6, 140))
             self.rect = self.image.get_rect()
@@ -135,7 +118,7 @@ class MainChar(pygame.sprite.Sprite):
             if self.index >= 30:
                 self.index = 0
             elif self.rect.x < WIDTH + 100:
-                self.cordX += 11
+                self.cordX += 12
             else:
                 self.cordX = -100
         else:
@@ -172,13 +155,6 @@ class MainChar(pygame.sprite.Sprite):
             if self.isSlide:
                 self.image = pygame.transform.scale(self.image,
                                                     (self.image.get_size()[0] * 0.8, 110))
-                # self.index += 1
-                # if self.index >= 30:
-                #     self.index = 0
-                # self.image = self.images[self.index]
-                # self.image = pygame.transform.scale(self.image,
-                #                                     (self.image.get_size()[0] * 0.4, 100))
-                # self.rect = self.image.get_rect()
                 self.rect.center = (self.cordX_2 + 10, self.cordY_2 + 30)
 
 
@@ -189,28 +165,42 @@ class SmokeSprite(pygame.sprite.Sprite):
                        for x in range(3)]
         for n in self.images:
             n.set_colorkey((4, 142, 176))
-        self.index = 0
+        self.index = -1
         self.image = self.images[self.index]
         self.rect = self.image.get_rect()
         self.rect.center = (-200, -200)
         self.smoke_bool = False
 
+    x = 0
+    y = 0
+
     def update(self):
-        global cX, cY
+        global cX, cY, my_bool
         if self.smoke_bool:
             self.index += 1
+            if self.index == 0:
+                self.x = cX
+                self.y = cY
             if self.index >= 30:
-                self.index = 0
+                self.index = -1
                 self.smoke_bool = False
-            self.image = self.images[self.index]
-            self.image = pygame.transform.scale(self.image, (200, 150))
-            self.rect = self.image.get_rect()
-            self.rect.center = (cX, cY)
+            if self.index != -1:
+                self.image = self.images[self.index]
+                self.image = pygame.transform.scale(self.image, (200, 150))
+                if self.index > 5:
+                    self.rect = self.image.get_rect()
+                    self.rect.center = (self.x, self.y)
+                    self.x -= 10
+                else:
+                    self.rect = self.image.get_rect()
+                    self.rect.center = (self.x, self.y)
+        else:
+            self.rect.center = (-230, -230)
 
 
 def main():
     pygame.init()
-    global screen, status, score, score_list, cY, cX
+    global screen, status, score, score_list, cY, cX, my_bool
     status = 'Main'
     pygame.mixer.init()
     pygame.display.set_caption("My Game")
@@ -225,14 +215,13 @@ def main():
     ground_3.rect.left = ground_2.image.get_size()[0] + ground_2.image.get_size()[0]
     smoke = SmokeSprite()
     bg = BackG()
-    all_sprites.add(bg, ground, ground_2, ground_3, char, obs_1, smoke)
+    all_sprites.add(bg, ground, ground_2, ground_3, char, smoke, obs_1)
     running = True
     score = 0
 
     while running:
+        global cX, cY
         clock.tick(FPS)
-        cX = char.rect.center[0]
-        cY = char.rect.center[1]
         score_text = "Score: " + str(score)
         record_text = "Record: " + str(score_list[0])
         screen.fill((255, 255, 255))
@@ -244,12 +233,21 @@ def main():
                     char.isJump = True
                 elif event.key == pygame.K_DOWN:
                     smoke.smoke_bool = True
-                    all_sprites.add(smoke)
+                    smoke.index = -1
+                    my_bool = 1
+                    if char.isJump:
+                        cY = char.rect.center[1] + 50
+                    else:
+                        cX = char.rect.center[0]
+                        cY = char.rect.center[1]
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_DOWN:
+                    cX = char.rect.center[0]
+                    cY = char.rect.center[1] - 30
                     char.isSlide = False
                     smoke.smoke_bool = True
-                    all_sprites.add(smoke)
+                    smoke.index = -1
+
         keys = pygame.key.get_pressed()
         if keys[pygame.K_DOWN]:
             char.isSlide = True
@@ -261,8 +259,6 @@ def main():
         screen.blit(score_text, (10, 10))
         font_2 = pygame.font.Font(None, 30)
         record_text = font_2.render(record_text, True, (0, 0, 0))
-        if not smoke.smoke_bool:
-            all_sprites.remove(smoke)
         all_sprites.draw(screen)
         screen.blit(score_text, (10, 10))
         screen.blit(record_text, (10, 30))
@@ -290,6 +286,12 @@ def game_over(g_score, record):
     background = background.convert()
     background.fill((255, 255, 255))
     screen.blit(background, (0, 0))
+    image = pygame.image.load('gameover_images/3.png')
+    image = pygame.transform.scale(image, (image.get_size()[0] * 0.7, image.get_size()[1] * 0.7))
+    image_1 = pygame.image.load('gameover_images/3.png')
+    image_1 = pygame.transform.scale(image_1, (image.get_size()[0], image.get_size()[1]))
+    screen.blit(image, (-40, -75))
+    screen.blit(image_1, (600, 200))
     pygame.mouse.set_visible(False)
     clock = pygame.time.Clock()
     # ground = Ground()
@@ -337,7 +339,6 @@ def intro():
     background = background.convert()
     background.fill((255, 255, 255))
     screen.blit(background, (0, 0))
-
     clock = pygame.time.Clock()
 
     char = MainChar()
@@ -366,15 +367,7 @@ def intro():
         intro_string.append("'key_up'(стрелка вверх), чтобы прыгать")
         intro_string.append("'key_down'(стрелка вниз), чтобы присесть")
         intro_string.append("'space', чтобы продолжить")
-        i = 0
-        ix = 160
-        for i in range(len(intro_string)):
-            font = pygame.font.Font(None, 40)
-            introText = font.render(intro_string[i], True, (0, 0, 0))
-            screen.blit(introText, ((WIDTH / 2) - 270, HEIGHT / 2 - ix))
-            i += 1
-            ix -= 40
-        all_sprites.clear(screen, background)
+        # all_sprites.clear(screen, background)
         all_sprites.draw(screen)
         i = 0
         ix = 160
@@ -384,6 +377,7 @@ def intro():
             screen.blit(introText, ((WIDTH / 2) - 270, HEIGHT / 2 - ix))
             i += 1
             ix -= 40
+
         all_sprites.update()
         pygame.display.flip()
 
