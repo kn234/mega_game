@@ -18,7 +18,6 @@ speed = 15
 ground_speed = 10
 cX = 150
 cY = 375
-my_bool = 1
 
 
 class Obstacle(pygame.sprite.Sprite):
@@ -199,8 +198,8 @@ class SmokeSprite(pygame.sprite.Sprite):
 
 
 def main():
+    global screen, status, score, score_list, cY, cX
     pygame.init()
-    global screen, status, score, score_list, cY, cX, my_bool
     status = 'Main'
     pygame.mixer.init()
     pygame.display.set_caption("My Game")
@@ -218,7 +217,6 @@ def main():
     all_sprites.add(bg, ground, ground_2, ground_3, char, smoke, obs_1)
     running = True
     score = 0
-
     while running:
         global cX, cY
         clock.tick(FPS)
@@ -234,7 +232,6 @@ def main():
                 elif event.key == pygame.K_DOWN:
                     smoke.smoke_bool = True
                     smoke.index = -1
-                    my_bool = 1
                     if char.isJump:
                         cY = char.rect.center[1] + 50
                     else:
@@ -280,6 +277,7 @@ def main():
 
 def game_over(g_score, record):
     global screen, speed, ground_speed
+    pygame.display.set_caption("My Game")
     speed = 15
     ground_speed = 10
     background = pygame.Surface(screen.get_size())
@@ -334,6 +332,7 @@ def game_over(g_score, record):
 def intro():
     global status, screen
     pygame.init()
+    pygame.display.set_caption("My Game")
     status = 'Intro'
     background = pygame.Surface(screen.get_size())
     background = background.convert()
